@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLASH on TSCC Tutorial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --border-color: #e1e4e8;
+            --bg-color: #ffffff;
+            --text-color: #24292e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: #f6f8fa;
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .nav-section {
+            margin-bottom: 25px;
+        }
+        
+        .nav-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-bottom: 5px;
+        }
+        
+        .nav-links a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .nav-links a:hover {
+            background: #e1e4e8;
+        }
+        
+        .nav-links a.active {
+            background: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+        }
+        
+        /* Main Content */
+        #content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            max-width: 900px;
+        }
+        
+        .markdown-body {
+            padding: 40px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Page content */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        /* Code styling */
+        pre {
+            background: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.9em;
+            background: #f6f8fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+            }
+            
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            
+            #content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .markdown-body {
+                padding: 20px;
+            }
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-top {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-top:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Navigation -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>FLASH on TSCC</h1>
+            <p>Building & Running FLASH 4.7.1</p>
+        </div>
+        
+        <div class="nav-section">
+            <h3>Tutorials</h3>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#installation" class="nav-link">Installation Guide</a></li>
+                <li><a href="#first-simulation" class="nav-link">First Simulation</a></li>
+                <li><a href="#advanced-topics" class="nav-link">Advanced Topics</a></li>
+                <li><a href="#troubleshooting" class="nav-link">Troubleshooting</a></li>
+            </ul>
+        </div>
+        
+        <div class="nav-section">
+            <h3>Resources</h3>
+            <ul class="nav-links">
+                <li><a href="https://github.com/owenbardeen/flash-tscc-tutorial" target="_blank">
+                    <i class="fab fa-github"></i> Source Code
+                </a></li>
+                <li><a href="https://flash.rochester.edu" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> FLASH Website
+                </a></li>
+                <li><a href="https://www.sdsc.edu/support/user_guides/tscc.html" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> TSCC Guide
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Home Page -->
+        <div id="home" class="page active">
+            <div class="markdown-body">
+                <h1>FLASH on TSCC Tutorial</h1>
+                <p class="lead">A step-by-step guide for building and running FLASH 4.7.1 on SDSC's TSCC cluster.</p>
+                
+                <h2>Prerequisites</h2>
+                <ul>
+                    <li>TSCC account with access to the cluster</li>
+                    <li>Basic knowledge of Linux command line</li>
+                    <li>Familiarity with HPC concepts</li>
+                    <li>Git installed on your local machine</li>
+                </ul>
+                
+                <h2>Getting Started</h2>
+                <p>This tutorial is organized in a logical progression:</p>
+                <ol>
+                    <li><strong>Installation Guide</strong> - Set up FLASH on TSCC</li>
+                    <li><strong>First Simulation</strong> - Run a basic Sedov test</li>
+                    <li><strong>Advanced Topics</strong> - Optimize and customize</li>
+                    <li><strong>Troubleshooting</strong> - Common issues and solutions</li>
+                </ol>
+                
+                <div class="alert" style="background: #e3f2fd; padding: 15px; border-radius: 4px; border-left: 4px solid #2196f3; margin: 20px 0;">
+                    <strong>Note:</strong> All commands in this tutorial assume you're working on TSCC login nodes.
+                </div>
+                
+                <h2>Quick Start</h2>
+                <pre><code># Log into TSCC
+ssh username@tscc.sdsc.edu
+
+# Load required modules
+module load intel mvapich2_ib hdf5
+
+# Download FLASH
+wget https://flash.rochester.edu/site/flashcode/user_support/flash4.7.1.tar.gz</code></pre>
+            </div>
+        </div>
+        
+        <!-- Installation Page -->
+        <div id="installation" class="page">
+            <div class="markdown-body">
+                <h1>Installation Guide</h1>
+                
+                <h2>1. Log into TSCC</h2>
+                <pre><code>ssh your_username@tscc.sdsc.edu</code></pre>
+                
+                <h2>2. Load Required Modules</h2>
+                <pre><code>module load intel
+module load mvapich2_ib
+module load hdf5
+module load python</code></pre>
+                
+                <h2>3. Download FLASH 4.7.1</h2>
+                <pre><code>cd /home/your_username
+wget https://flash.rochester.edu/site/flashcode/user_support/flash4.7.1.tar.gz
+tar -xzf flash4.7.1.tar.gz
+cd flash4.7.1</code></pre>
+                
+                <h2>4. Configure and Build</h2>
+                <pre><code># List available setups
+./setup -list
+
+# Configure Sedov test problem
+./setup Sedov -auto
+
+# Build FLASH
+cd object
+make -j4</code></pre>
+                
+                <h2>5. Verify Installation</h2>
+                <pre><code># Check if flash4 executable exists
+ls -la flash4
+
+# Check version
+./flash4 -v</code></pre>
+                
+                <div class="alert" style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 20px 0;">
+                    <strong>Tip:</strong> The build process may take 10-30 minutes depending on system load.
+                </div>
+                
+                <h2>Common Build Options</h2>
+                <pre><code># With parallel I/O support
+./setup Sedov -auto +parallelIO
+
+# With UG (unsplit grid) solver
+./setup Sedov -auto +ug
+
+# 3D version
+./setup Sedov -3d -auto</code></pre>
+            </div>
+        </div>
+        
+        <!-- First Simulation Page -->
+        <div id="first-simulation" class="page">
+            <div class="markdown-body">
+                <h1>First Simulation: Sedov Test</h1>
+                
+                <h2>1. Prepare Simulation Directory</h2>
+                <pre><code># Create a run directory
+cd /home/your_username
+mkdir flash_runs
+cd flash_runs
+mkdir sedov_test
+cd sedov_test
+
+# Copy necessary files from installation
+cp ../../flash4.7.1/object/flash4 .
+cp ../../flash4.7.1/source/Simulation/SimulationMain/Sedov/Config .
+cp ../../flash4.7.1/source/Simulation/SimulationMain/Sedov/Flash.par .</code></pre>
+                
+                <h2>2. Create PBS Submission Script</h2>
+                <p>Create a file called <code>submit.pbs</code>:</p>
+                <pre><code>#!/bin/bash
+#PBS -q normal
+#PBS -l nodes=1:ppn=16
+#PBS -l walltime=01:00:00
+#PBS -N flash_sedov
+#PBS -o flash.out
+#PBS -e flash.err
+
+cd $PBS_O_WORKDIR
+
+# Load modules
+module load intel mvapich2_ib hdf5
+
+# Run FLASH
+mpirun -np 16 ./flash4</code></pre>
+                
+                <h2>3. Submit the Job</h2>
+                <pre><code># Make script executable
+chmod +x submit.pbs
+
+# Submit to queue
+qsub submit.pbs
+
+# Check job status
+qstat -u $USER</code></pre>
+                
+                <h2>4. Monitor Simulation Progress</h2>
+                <pre><code># Check output files
+ls -la *.log
+
+# Watch log file (Ctrl+C to stop)
+tail -f flash_sedov.log
+
+# Check for checkpoint files
+ls -la chk* 2>/dev/null || echo "No checkpoints yet"</code></pre>
+                
+                <h2>5. Analyze Results</h2>
+                <pre><code># Convert HDF5 output to VTK for visualization
+module load visit
+
+# Or use Python with h5py
+module load python
+python3 -c "import h5py; import numpy as np; print('HDF5 available')"</code></pre>
+            </div>
+        </div>
+        
+        <!-- Advanced Topics Page -->
+        <div id="advanced-topics" class="page">
+            <div class="markdown-body">
+                <h1>Advanced Topics</h1>
+                
+                <h2>Performance Tuning</h2>
+                <h3>Compiler Optimization</h3>
+                <pre><code># Edit setup script for optimization
+cd flash4.7.1
+cp sites/TSCC/Makefile.h sites/TSCC/Makefile.h.backup
+
+# Add optimization flags
+echo "FFLAGS_OPT = -O3 -xHost -ipo" >> sites/TSCC/Makefile.h
+echo "CFLAGS_OPT = -O3 -xHost -ipo" >> sites/TSCC/Makefile.h</code></pre>
+                
+                <h3>MPI Configuration</h3>
+                <pre><code># Test different MPI configurations
+mpirun -np 32 -ppn 16 ./flash4  # 2 nodes, 16 cores each
+mpirun -np 64 -ppn 8  ./flash4  # 8 nodes, 8 cores each</code></pre>
+                
+                <h2>Custom Physics Modules</h2>
+                <pre><code># Create custom setup
+./setup -n MyCustomSetup
+cd source/Simulation/SimulationMain/MyCustomSetup
+
+# Edit Config file to include desired physics
+# Example: add gravity + multiphysics
++gravity
++multiphysics</code></pre>
+                
+                <h2>Parameter Studies</h2>
+                <pre><code>#!/bin/bash
+# Script for parameter sweep
+for density in 1.0 2.0 5.0 10.0
+do
+    sed -i "s/^basenumdens.*/basenumdens = $density/" Flash.par
+    mpirun -np 16 ./flash4
+    mv flash.log flash_density_${density}.log
+done</code></pre>
+                
+                <h2>Parallel I/O Optimization</h2>
+                <pre><code># Configure with parallel HDF5
+./setup Sedov -auto +parallelIO
+
+# In Flash.par, adjust I/O settings
+restart = .false.
+plotFileNumberStep = 10
+checkpointFileNumberStep = 50
+ioStrategy = "collective"</code></pre>
+            </div>
+        </div>
+        
+        <!-- Troubleshooting Page -->
+        <div id="troubleshooting" class="page">
+            <div class="markdown-body">
+                <h1>Troubleshooting</h1>
+                
+                <h2>Build Issues</h2>
+                
+                <h3>Error: Missing libraries</h3>
+                <pre><code># Solution: Verify all modules are loaded
+module list
+
+# Load required modules
+module purge
+module load intel mvapich2_ib hdf5 python</code></pre>
+                
+                <h3>Error: "make: command not found"</h3>
+                <pre><code># Solution: Load GNU compilers
+module load gnu
+make clean
+make</code></pre>
+                
+                <h3>Error: Permission denied on /home</h3>
+                <pre><code># Solution: Check disk quota
+quota -s
+
+# Clean up old files
+cd /home/your_username
+du -sh ./* | sort -h</code></pre>
+                
+                <h2>Runtime Issues</h2>
+                
+                <h3>Error: MPI initialization failed</h3>
+                <pre><code># Solution: Check MPI environment
+which mpirun
+mpirun --version
+
+# Test MPI with simple program
+mpirun -np 4 hostname</code></pre>
+                
+                <h3>Error: HDF5 library not found</h3>
+                <pre><code># Solution: Load HDF5 module
+module load hdf5/1.10.6
+
+# Or specify library path
+export LD_LIBRARY_PATH=/opt/hdf5/lib:$LD_LIBRARY_PATH</code></pre>
+                
+                <h3>Job stuck in queue</h3>
+                <pre><code># Check queue status
+qstat -Q
+
+# Try different queue
+#PBS -q gpu-shared  # or normal, gpu, etc.</code></pre>
+                
+                <h2>Common TSCC Issues</h2>
+                
+                <h3>Session timeout</h3>
+                <pre><code># Use screen or tmux to persist sessions
+module load screen
+screen -S flash_session
+
+# Or use nohup for long commands
+nohup make -j8 > build.log 2>&1 &</code></pre>
+                
+                <h3>Memory issues</h3>
+                <pre><code># Request more memory in PBS script
+#PBS -l pmem=4gb
+#PBS -l mem=64gb</code></pre>
+                
+                <div class="alert" style="background: #d4edda; padding: 15px; border-radius: 4px; border-left: 4px solid #28a745; margin: 20px 0;">
+                    <strong>Need more help?</strong> Contact SDSC support: <a href="mailto:consult@sdsc.edu">consult@sdsc.edu</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2024 Owen Bardeen. This tutorial is for educational purposes.</p>
+            <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i> Back to top</a>
+        </footer>
+    </div>
+
+    <script>
+        // Navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            // Handle navigation clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get target page ID
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // Update active states
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show target page
+                    pages.forEach(page => {
+                        page.classList.remove('active');
+                        if (page.id === targetId) {
+                            page.classList.add('active');
+                        }
+                    });
+                    
+                    // Close mobile menu on selection
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                    }
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                });
+            });
+            
+            // Mobile menu toggle
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+            
+            // Close menu when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && 
+                    !sidebar.contains(e.target) && 
+                    !menuToggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
+            });
+            
+            // Back to top button
+            document.querySelector('.back-to-top').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            });
+            
+            // Load content from tutorials folder if available
+            async function loadContent() {
+                try {
+                    // Try to load actual markdown files if they exist
+                    const response = await fetch('tutorials/installation.md');
+                    if (response.ok) {
+                        console.log('Found tutorial files!');
+                        // You could dynamically load content here
+                    }
+                } catch (error) {
+                    console.log('Using embedded content');
+                }
+            }
+            
+            loadContent();
+        });
+    </script>
+</body>
+</html>
