@@ -421,15 +421,16 @@ ls -lh flash4.7.1.tar.gz
 tar -xzf flash4.7.1.tar.gz</code></pre>
                 </div>
                     
-                <p>Then create your object folder:</p>
+                <p>Then setup the simple Sedov problem (here as an example):</p>
                 
                 <div class="code-block">
                     <button class="copy-btn" data-clipboard-target="#create-object-code">
                         <i class="far fa-copy"></i> Copy
                     </button>
                     <pre><code id="create-object-code">cd FLASH4.7.1
-mkdir object
-cd object</code></pre>
+./setup Sedov -auto
+cd object
+chmod -R u+x .</code></pre>
                 </div>
                 
                 <p>Copy your site configuration:</p>
@@ -460,7 +461,8 @@ cd object</code></pre>
                     <button class="copy-btn" data-clipboard-target="#compile-flash-code">
                         <i class="far fa-copy"></i> Copy
                     </button>
-                    <pre><code id="compile-flash-code">make -j 4</code></pre>
+                    <pre><code id="compile-flash-code">make -j 4
+chmod -R u+x .</code></pre>
                 </div>
                 
                 <h2>Common build errors</h2>
