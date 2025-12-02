@@ -338,7 +338,22 @@ module load hypre/2.23.0-vldmtv6</code></pre>
             <div class="markdown-body">
                 <h1>Building FLASH 4.7.1 on TSCC</h1>
                 
-                <p>Clone FLASH or upload your tarball, then create your object folder:</p>
+                <p>Clone FLASH or upload your tarball. </p>
+
+				<pre><code>
+
+				# Download FLASH 4.7.1 tarball
+wget https://flash.rochester.edu/site/flashcode/user_support/flash4.7.1.tar.gz
+
+# Verify the download
+ls -lh flash4.7.1.tar.gz
+
+# Unpack the tarball
+tar -xzf flash4.7.1.tar.gz
+
+					</code></pre>
+					
+				<p>Then create your object folder:</p>
                 
                 <pre><code>cd FLASH4.7.1
 mkdir object
@@ -398,7 +413,7 @@ export OMP_NUM_THREADS=1</code></pre>
                 
                 <p>Run FLASH (example 4 ranks):</p>
                 
-                <pre><code>srun -n 8 --overlap ./flash4</code></pre>
+                <pre><code>srun -n 4 --overlap ./flash4</code></pre>
                 
                 <h2>If nothing happens when you run srun</h2>
                 
