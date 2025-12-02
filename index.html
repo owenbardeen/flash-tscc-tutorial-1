@@ -214,6 +214,20 @@
         .back-to-top:hover {
             text-decoration: underline;
         }
+        
+        /* Custom styles for troubleshooting */
+        .troubleshooting-item {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #fff8e1;
+            border-radius: 4px;
+            border-left: 4px solid #ffa000;
+        }
+        
+        .troubleshooting-item h3 {
+            color: #d84315;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -233,10 +247,12 @@
             <h3>Tutorials</h3>
             <ul class="nav-links">
                 <li><a href="#home" class="nav-link active">Home</a></li>
-                <li><a href="#installation" class="nav-link">Installation Guide</a></li>
-                <li><a href="#first-simulation" class="nav-link">First Simulation</a></li>
-                <li><a href="#advanced-topics" class="nav-link">Advanced Topics</a></li>
+                <li><a href="#environment-setup" class="nav-link">Environment Setup</a></li>
+                <li><a href="#building-flash" class="nav-link">Building FLASH</a></li>
+                <li><a href="#running-flash" class="nav-link">Running FLASH</a></li>
+                <li><a href="#batch-jobs" class="nav-link">Batch Jobs</a></li>
                 <li><a href="#troubleshooting" class="nav-link">Troubleshooting</a></li>
+                <li><a href="#example-makefile" class="nav-link">Example Makefile</a></li>
             </ul>
         </div>
         
@@ -275,10 +291,12 @@
                 <h2>Getting Started</h2>
                 <p>This tutorial is organized in a logical progression:</p>
                 <ol>
-                    <li><strong>Installation Guide</strong> - Set up FLASH on TSCC</li>
-                    <li><strong>First Simulation</strong> - Run a basic Sedov test</li>
-                    <li><strong>Advanced Topics</strong> - Optimize and customize</li>
+                    <li><strong>Environment Setup</strong> - Configure TSCC for FLASH</li>
+                    <li><strong>Building FLASH</strong> - Compile FLASH from source</li>
+                    <li><strong>Running FLASH</strong> - Execute simulations interactively</li>
+                    <li><strong>Batch Jobs</strong> - Submit jobs to TSCC queues</li>
                     <li><strong>Troubleshooting</strong> - Common issues and solutions</li>
+                    <li><strong>Example Makefile</strong> - TSCC-optimized build configuration</li>
                 </ol>
                 
                 <div class="alert" style="background: #e3f2fd; padding: 15px; border-radius: 4px; border-left: 4px solid #2196f3; margin: 20px 0;">
@@ -290,182 +308,143 @@
 ssh username@tscc.sdsc.edu
 
 # Load required modules
-module load intel mvapich2_ib hdf5
+module purge
+module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l
+module load intel-mpi/2019.10.317-wqrwez3
+module load hdf5/1.10.7-rphji2e
 
 # Download FLASH
 wget https://flash.rochester.edu/site/flashcode/user_support/flash4.7.1.tar.gz</code></pre>
             </div>
         </div>
         
-        <!-- Installation Page -->
-        <div id="installation" class="page">
+        <!-- Environment Setup Page -->
+        <div id="environment-setup" class="page">
             <div class="markdown-body">
-                <h1>Installation Guide</h1>
+                <h1>Environment Setup (TSCC)</h1>
                 
-                <h2>1. Log into TSCC</h2>
-                <pre><code>ssh your_username@tscc.sdsc.edu</code></pre>
+                <p>Before building FLASH, load the correct modules:</p>
                 
-                <h2>2. Load Required Modules</h2>
-                <pre><code>module load intel
-module load mvapich2_ib
-module load hdf5
-module load python</code></pre>
+                <pre><code>module purge
+module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l
+module load intel-mpi/2019.10.317-wqrwez3
+module load hdf5/1.10.7-rphji2e
+module load hypre/2.23.0-vldmtv6</code></pre>
+            </div>
+        </div>
+        
+        <!-- Building FLASH Page -->
+        <div id="building-flash" class="page">
+            <div class="markdown-body">
+                <h1>Building FLASH 4.7.1 on TSCC</h1>
                 
-                <h2>3. Download FLASH 4.7.1</h2>
-                <pre><code>cd /home/your_username
-wget https://flash.rochester.edu/site/flashcode/user_support/flash4.7.1.tar.gz
-tar -xzf flash4.7.1.tar.gz
-cd flash4.7.1</code></pre>
+                <p>Clone FLASH or upload your tarball, then create your object folder:</p>
                 
-                <h2>4. Configure and Build</h2>
-                <pre><code># List available setups
-./setup -list
-
-# Configure Sedov test problem
-./setup Sedov -auto
-
-# Build FLASH
-cd object
-make -j4</code></pre>
+                <pre><code>cd FLASH4.7.1
+mkdir object
+cd object</code></pre>
                 
-                <h2>5. Verify Installation</h2>
-                <pre><code># Check if flash4 executable exists
-ls -la flash4
-
-# Check version
-./flash4 -v</code></pre>
+                <p>Copy your site configuration:</p>
                 
-                <div class="alert" style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                    <strong>Tip:</strong> The build process may take 10-30 minutes depending on system load.
+                <pre><code>cp ../sites/tscc/Makefile.h ../</code></pre>
+                
+                <p>If the Makefile is not there, see the Makefile section for mine, and copy it into the "FLASH4.7.1" folder.</p>
+                
+                <p>Get on an interactive session before compiling FLASH.</p>
+                
+                <pre><code>srun -N 1 -n 4 -t 1:00:00 -p hotel -q hotel -A htl171 --pty bash</code></pre>
+                
+                <p>This will get you on a compute node with 4 cores for 1 hour. Adjust the parameters as necessary.</p>
+                
+                <p>Now, compile FLASH.</p>
+                
+                <pre><code>make -j 8</code></pre>
+                
+                <h2>Common build errors</h2>
+                
+                <div class="troubleshooting-item">
+                    <h3>❌ Permission denied (e.g., make_bstats)</h3>
+                    <p>Fix:</p>
+                    <pre><code>chmod +x *
+chmod +x ../tools/*</code></pre>
                 </div>
                 
-                <h2>Common Build Options</h2>
-                <pre><code># With parallel I/O support
-./setup Sedov -auto +parallelIO
-
-# With UG (unsplit grid) solver
-./setup Sedov -auto +ug
-
-# 3D version
-./setup Sedov -3d -auto</code></pre>
+                <div class="troubleshooting-item">
+                    <h3>❌ MPI type mismatch errors</h3>
+                    <p>Happen when mixing OpenMPI + system gfortran.<br>
+                    This tutorial avoids them by using Intel MPI instead.</p>
+                </div>
             </div>
         </div>
         
-        <!-- First Simulation Page -->
-        <div id="first-simulation" class="page">
+        <!-- Running FLASH Page -->
+        <div id="running-flash" class="page">
             <div class="markdown-body">
-                <h1>First Simulation: Sedov Test</h1>
+                <h1>Running FLASH on TSCC</h1>
                 
-                <h2>1. Prepare Simulation Directory</h2>
-                <pre><code># Create a run directory
-cd /home/your_username
-mkdir flash_runs
-cd flash_runs
-mkdir sedov_test
-cd sedov_test
-
-# Copy necessary files from installation
-cp ../../flash4.7.1/object/flash4 .
-cp ../../flash4.7.1/source/Simulation/SimulationMain/Sedov/Config .
-cp ../../flash4.7.1/source/Simulation/SimulationMain/Sedov/Flash.par .</code></pre>
+                <p>Load modules:</p>
                 
-                <h2>2. Create PBS Submission Script</h2>
-                <p>Create a file called <code>submit.pbs</code>:</p>
-                <pre><code>#!/bin/bash
-#PBS -q normal
-#PBS -l nodes=1:ppn=16
-#PBS -l walltime=01:00:00
-#PBS -N flash_sedov
-#PBS -o flash.out
-#PBS -e flash.err
-
-cd $PBS_O_WORKDIR
-
-# Load modules
-module load intel mvapich2_ib hdf5
-
-# Run FLASH
-mpirun -np 16 ./flash4</code></pre>
+                <pre><code>module purge
+module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l
+module load intel-mpi/2019.10.317-wqrwez3
+module load hdf5/1.10.7-rphji2e
+module load hypre/2.23.0-vldmtv6</code></pre>
                 
-                <h2>3. Submit the Job</h2>
-                <pre><code># Make script executable
-chmod +x submit.pbs
-
-# Submit to queue
-qsub submit.pbs
-
-# Check job status
-qstat -u $USER</code></pre>
+                <p>Configure Intel MPI runtime:</p>
                 
-                <h2>4. Monitor Simulation Progress</h2>
-                <pre><code># Check output files
-ls -la *.log
-
-# Watch log file (Ctrl+C to stop)
-tail -f flash_sedov.log
-
-# Check for checkpoint files
-ls -la chk* 2>/dev/null || echo "No checkpoints yet"</code></pre>
+                <pre><code>export FI_PROVIDER=tcp
+export I_MPI_PMI_LIBRARY=/cm/shared/apps/slurm/current/lib64/libpmi2.so
+export OMP_NUM_THREADS=1</code></pre>
                 
-                <h2>5. Analyze Results</h2>
-                <pre><code># Convert HDF5 output to VTK for visualization
-module load visit
-
-# Or use Python with h5py
-module load python
-python3 -c "import h5py; import numpy as np; print('HDF5 available')"</code></pre>
+                <p>Run FLASH (example 4 ranks):</p>
+                
+                <pre><code>srun -n 8 --overlap ./flash4</code></pre>
+                
+                <h2>If nothing happens when you run srun</h2>
+                
+                <p>Check you are on a compute node:</p>
+                <pre><code>hostname
+echo $SLURM_JOB_ID</code></pre>
+                
+                <p>Check srun exists:</p>
+                <pre><code>command -v srun</code></pre>
+                
+                <p>If missing:</p>
+                <pre><code>export PATH=/cm/shared/apps/slurm/current/bin:$PATH</code></pre>
             </div>
         </div>
         
-        <!-- Advanced Topics Page -->
-        <div id="advanced-topics" class="page">
+        <!-- Batch Jobs Page -->
+        <div id="batch-jobs" class="page">
             <div class="markdown-body">
-                <h1>Advanced Topics</h1>
+                <h1>Submitting FLASH Batch Jobs on TSCC</h1>
                 
-                <h2>Performance Tuning</h2>
-                <h3>Compiler Optimization</h3>
-                <pre><code># Edit setup script for optimization
-cd flash4.7.1
-cp sites/TSCC/Makefile.h sites/TSCC/Makefile.h.backup
-
-# Add optimization flags
-echo "FFLAGS_OPT = -O3 -xHost -ipo" >> sites/TSCC/Makefile.h
-echo "CFLAGS_OPT = -O3 -xHost -ipo" >> sites/TSCC/Makefile.h</code></pre>
+                <p>Create <code>run_flash.sh</code>:</p>
                 
-                <h3>MPI Configuration</h3>
-                <pre><code># Test different MPI configurations
-mpirun -np 32 -ppn 16 ./flash4  # 2 nodes, 16 cores each
-mpirun -np 64 -ppn 8  ./flash4  # 8 nodes, 8 cores each</code></pre>
-                
-                <h2>Custom Physics Modules</h2>
-                <pre><code># Create custom setup
-./setup -n MyCustomSetup
-cd source/Simulation/SimulationMain/MyCustomSetup
-
-# Edit Config file to include desired physics
-# Example: add gravity + multiphysics
-+gravity
-+multiphysics</code></pre>
-                
-                <h2>Parameter Studies</h2>
                 <pre><code>#!/bin/bash
-# Script for parameter sweep
-for density in 1.0 2.0 5.0 10.0
-do
-    sed -i "s/^basenumdens.*/basenumdens = $density/" Flash.par
-    mpirun -np 16 ./flash4
-    mv flash.log flash_density_${density}.log
-done</code></pre>
-                
-                <h2>Parallel I/O Optimization</h2>
-                <pre><code># Configure with parallel HDF5
-./setup Sedov -auto +parallelIO
+#SBATCH --job-name=flash
+#SBATCH --output=flash.out
+#SBATCH --nodes=1
+#SBATCH --ntasks=16
+#SBATCH --partition=hotel
+#SBATCH --account=htl171
+#SBATCH --time=04:00:00
 
-# In Flash.par, adjust I/O settings
-restart = .false.
-plotFileNumberStep = 10
-checkpointFileNumberStep = 50
-ioStrategy = "collective"</code></pre>
+module purge
+module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l
+module load intel-mpi/2019.10.317-wqrwez3
+module load hdf5/1.10.7-rphji2e
+module load hypre/2.23.0-vldmtv6
+
+export FI_PROVIDER=tcp
+export I_MPI_PMI_LIBRARY=/cm/shared/apps/slurm/current/lib64/libpmi2.so
+export OMP_NUM_THREADS=1
+
+srun ./flash4</code></pre>
+                
+                <p>Submit:</p>
+                
+                <pre><code>sbatch run_flash.sh</code></pre>
             </div>
         </div>
         
@@ -474,72 +453,199 @@ ioStrategy = "collective"</code></pre>
             <div class="markdown-body">
                 <h1>Troubleshooting</h1>
                 
-                <h2>Build Issues</h2>
-                
-                <h3>Error: Missing libraries</h3>
-                <pre><code># Solution: Verify all modules are loaded
-module list
-
-# Load required modules
-module purge
-module load intel mvapich2_ib hdf5 python</code></pre>
-                
-                <h3>Error: "make: command not found"</h3>
-                <pre><code># Solution: Load GNU compilers
-module load gnu
-make clean
-make</code></pre>
-                
-                <h3>Error: Permission denied on /home</h3>
-                <pre><code># Solution: Check disk quota
-quota -s
-
-# Clean up old files
-cd /home/your_username
-du -sh ./* | sort -h</code></pre>
-                
-                <h2>Runtime Issues</h2>
-                
-                <h3>Error: MPI initialization failed</h3>
-                <pre><code># Solution: Check MPI environment
-which mpirun
-mpirun --version
-
-# Test MPI with simple program
-mpirun -np 4 hostname</code></pre>
-                
-                <h3>Error: HDF5 library not found</h3>
-                <pre><code># Solution: Load HDF5 module
-module load hdf5/1.10.6
-
-# Or specify library path
-export LD_LIBRARY_PATH=/opt/hdf5/lib:$LD_LIBRARY_PATH</code></pre>
-                
-                <h3>Job stuck in queue</h3>
-                <pre><code># Check queue status
-qstat -Q
-
-# Try different queue
-#PBS -q gpu-shared  # or normal, gpu, etc.</code></pre>
-                
-                <h2>Common TSCC Issues</h2>
-                
-                <h3>Session timeout</h3>
-                <pre><code># Use screen or tmux to persist sessions
-module load screen
-screen -S flash_session
-
-# Or use nohup for long commands
-nohup make -j8 > build.log 2>&1 &</code></pre>
-                
-                <h3>Memory issues</h3>
-                <pre><code># Request more memory in PBS script
-#PBS -l pmem=4gb
-#PBS -l mem=64gb</code></pre>
-                
-                <div class="alert" style="background: #d4edda; padding: 15px; border-radius: 4px; border-left: 4px solid #28a745; margin: 20px 0;">
-                    <strong>Need more help?</strong> Contact SDSC support: <a href="mailto:consult@sdsc.edu">consult@sdsc.edu</a>
+                <div class="troubleshooting-item">
+                    <h3>❌ FLASH hangs on srun</h3>
+                    <p>Likely not on a compute node.</p>
+                    <pre><code>echo $SLURM_JOB_ID</code></pre>
+                    <p>If empty, you are on a login node.<br>
+                    Start an interactive job.</p>
                 </div>
+                
+                <div class="troubleshooting-item">
+                    <h3>❌ Permission denied (flash4 or make_bstats)</h3>
+                    <pre><code>chmod +x flash4
+chmod -R +x *</code></pre>
+                </div>
+                
+                <div class="troubleshooting-item">
+                    <h3>❌ MPI type mismatch errors</h3>
+                    <p>Cause: Using OpenMPI + system gfortran</p>
+                    <p>Fix: Use Intel MPI<br>
+                    (See Environment Setup)</p>
+                </div>
+                
+                <div class="troubleshooting-item">
+                    <h3>❌ srun: command not found</h3>
+                    <p>Add Slurm:</p>
+                    <pre><code>export PATH=/cm/shared/apps/slurm/current/bin:$PATH</code></pre>
+                </div>
+                
+                <div class="troubleshooting-item">
+                    <h3>❌ HDF5/Hypre not found</h3>
+                    <p>Ensure modules:</p>
+                    <pre><code>module load hdf5/1.10.7-rphji2e
+module load hypre/2.23.0-vldmtv6</code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Example Makefile Page -->
+        <div id="example-makefile" class="page">
+            <div class="markdown-body">
+                <h1>FLASH Makefile Definitions for TSCC</h1>
+                
+                <pre><code># FLASH makefile definitions for x86-64 Linux (GNU compilers)
+#----------------------------------------------------------------------------
+# Set the HDF5/MPI library paths -- these need to be updated for your system
+#----------------------------------------------------------------------------
+#HDF4_PATH =
+
+MPI_PATH = /cm/shared/apps/spack/0.17.3/cpu/opt/spack/linux-rocky9-cascadelake/gcc-10.2.0/intel-mpi-2019.10.317-wqrwez3nzymbjy6gpdrpoufwuakohd2n/compilers_and_libraries_2020.4.317/linux/mpi/intel64
+HDF5_PATH = /cm/shared/apps/spack/0.17.3/cpu/opt/spack/linux-rocky9-cascadelake/gcc-10.2.0/hdf5-1.10.7-rphji2esl5nhlsksljxa5gx2acyrby6f
+HYPRE_PATH = /cm/shared/apps/spack/0.17.3/cpu/opt/spack/linux-rocky9-cascadelake/gcc-10.2.0/hypre-2.23.0-vldmtv67ndry7qe57gdxhz7ly6x26axz
+
+#----------------------------------------------------------------------------
+# Compiler and linker commands
+#
+#   Use the MPICH wrappers around the compilers -- these will automatically
+#   load the proper libraries and include files.  Version of MPICH prior
+#   to 1.2.2 (?) do not recognize .F90 as a valid Fortran file extension.
+#   You need to edit mpif90 and add .F90 to the test of filename extensions,
+#   or upgrade your MPICH.
+#----------------------------------------------------------------------------
+FCOMP   = $(MPI_PATH)/bin/mpif90
+CCOMP   = $(MPI_PATH)/bin/mpicc
+CPPCOMP = $(MPI_PATH)/bin/mpicxx
+LINK    = $(MPI_PATH)/bin/mpif90
+
+# pre-processor flag
+PP      = -D
+
+#----------------------------------------------------------------------------
+# Compilation flags
+#
+#  Three sets of compilation/linking flags are defined: one for optimized
+#  code, one for testing, and one for debugging.  The default is to use the
+#  _OPT version.  Specifying -debug to setup will pick the _DEBUG version,
+#  these should enable bounds checking.  Specifying _TEST is used for
+#  flash_test, and is set for quick code generation, and (sometimes)
+#  profiling.  The Makefile generated by setup will assign the generic token
+#  (ex. FFLAGS) to the proper set of flags (ex. FFLAGS_OPT).
+#----------------------------------------------------------------------------
+
+FFLAGS_OPT = -ggdb -c -O2 -fdefault-real-8 -fdefault-double-8 \
+-Wuninitialized
+
+FFLAGS_DEBUG = -ggdb -c -O0 -fdefault-real-8 -fdefault-double-8 \
+-pedantic -Wall -Wextra -Waliasing \
+-Wsurprising -Wconversion -Wunderflow \
+-ffpe-trap=invalid,zero,overflow -fbounds-check \
+-fimplicit-none -fstack-protector-all
+
+FFLAGS_TEST = -ggdb -c -fdefault-real-8 -fdefault-double-8 \
+-ffree-line-length-none
+
+FFLAGS_HYPRE = -I${HYPRE_PATH}/include
+CFLAGS_HYPRE = -I${HYPRE_PATH}/include
+
+FDEFS += -Damr_mpi_real=MPI_DOUBLE_PRECISION -Damr_mpi_integer=MPI_INTEGER -Damr_mpi_logical=MPI_LOGICAL
+FFLAGS += -fdefault-real-8 -fdefault-double-8
+
+FDEFS += -DMPI_DOUBLEPRECISION
+
+
+
+#The macro _FORTIFY_SOURCE adds some lightweight checks for buffer
+#overflows at both compile time and run time (only active at -O1 or higher)
+#http://gcc.gnu.org/ml/gcc-patches/2004-09/msg02055.html
+CFLAGS_OPT = -ggdb -c -O2 -Wuninitialized -D_FORTIFY_SOURCE=2
+
+CFLAGS_DEBUG = -ggdb -c -O0 -Wno-div-by-zero -Wundef \
+-Wconversion -Wstrict-prototypes -Wunreachable-code \
+-pedantic -Wall -Wextra -Winit-self -ftree-vrp -Wfloat-equal \
+-Wunsafe-loop-optimizations -Wpadded -fstack-protector-all
+
+CFLAGS_TEST = -ggdb -c
+
+# Platform symbol
+CDEFINES += -DLINUX
+
+# if we are using HDF5, we need to specify the path to the include files
+CFLAGS_HDF5 = -I ${HDF5_PATH}/include -DH5_USE_16_API
+
+CFLAGS_NCMPI = -I$(LIB_NCMPI)/include
+
+#----------------------------------------------------------------------------
+# Linker flags
+#
+#  There is a seperate version of the linker flags for each of the _OPT,
+#  _DEBUG, and _TEST cases.
+#----------------------------------------------------------------------------
+
+LFLAGS_OPT   = -ggdb -o
+LFLAGS_DEBUG = -ggdb -O0 -o
+LFLAGS_TEST  = -ggdb -o
+
+
+#----------------------------------------------------------------------------
+# Library specific linking
+#
+#  If a FLASH module has a 'LIBRARY xxx' line in its Config file, we need to
+#  create a macro in this Makefile.h for LIB_xxx, which will be added to the
+#  link line when FLASH is built.  This allows us to switch between different
+#  (incompatible) libraries.  We also create a _OPT, _DEBUG, and _TEST
+#  library macro to add any performance-minded libraries (like fast math),
+#  depending on how FLASH was setup.
+#----------------------------------------------------------------------------
+
+LIB_OPT   =
+LIB_DEBUG =
+LIB_TEST  =
+
+#LIB_HDF5  = -L${HDF5_PATH}/lib -lhdf5 /usr/lib64/libz.a
+LIB_HDF5  = -L${HDF5_PATH}/lib -Wl,-rpath=${HDF5_PATH}/lib -lhdf5  -DH5_USE_16_API
+
+LIB_PAPI  =
+LIB_MATH  =
+LIB_MPI   = 
+
+#LIB_NCMPI = -L $(NCMPI_PATH)/lib -lpnetcdf
+LIB_MPE   =
+
+LIB_HYPRE = -L${HYPRE_PATH}/lib -Wl,-rpath=${HYPRE_PATH}/lib -lHYPRE
+
+# Uncomment the following line to use electic fence memory debugger.
+# Need the following environmental variable (see env.sh):
+# export EF_ALLOW_MALLOC_0=1
+#CONFIG_LIB = -L/usr/lib64 -lefence
+
+#----------------------------------------------------------------------------
+# Additional machine-dependent object files
+#
+#  Add any machine specific files here -- they will be compiled and linked
+#  when FLASH is built.
+#----------------------------------------------------------------------------
+
+MACHOBJ =
+
+#----------------------------------------------------------------------------
+# Additional commands
+#----------------------------------------------------------------------------
+
+MV = mv -f
+AR = ar -r
+RM = rm -f
+CD = cd
+RL = ranlib
+ECHO = echo
+
+#----------------------------------------------------------------------------
+# Fake existence of iso_c_bindings module to prevent unnecessary recompilations.
+#---------------------------------------------------------------------------- 
+ifeq ($(FLASHBINARY),true)
+iso_c_binding.mod :
+	touch $@
+endif</code></pre>
             </div>
         </div>
         
@@ -608,21 +714,14 @@ nohup make -j8 > build.log 2>&1 &</code></pre>
                 window.scrollTo({top: 0, behavior: 'smooth'});
             });
             
-            // Load content from tutorials folder if available
-            async function loadContent() {
-                try {
-                    // Try to load actual markdown files if they exist
-                    const response = await fetch('tutorials/installation.md');
-                    if (response.ok) {
-                        console.log('Found tutorial files!');
-                        // You could dynamically load content here
-                    }
-                } catch (error) {
-                    console.log('Using embedded content');
+            // Handle initial page load from URL hash
+            if (window.location.hash) {
+                const targetId = window.location.hash.substring(1);
+                const targetLink = document.querySelector(`.nav-link[href="#${targetId}"]`);
+                if (targetLink) {
+                    targetLink.click();
                 }
             }
-            
-            loadContent();
         });
     </script>
 </body>
