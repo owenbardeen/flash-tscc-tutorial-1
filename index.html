@@ -396,10 +396,7 @@ chmod +x ../tools/*</code></pre>
                 <p>Load modules:</p>
                 
                 <pre><code>module purge
-module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l
-module load intel-mpi/2019.10.317-wqrwez3
-module load hdf5/1.10.7-rphji2e
-module load hypre/2.23.0-vldmtv6</code></pre>
+module load shared cpu/0.17.3 gcc/10.2.0-2ml3m2l intel-mpi/2019.10.317-wqrwez3 hdf5/1.10.7-rphji2e hypre/2.23.0-vldmtv6</code></pre>
                 
                 <p>Configure Intel MPI runtime:</p>
                 
@@ -409,7 +406,7 @@ export OMP_NUM_THREADS=1</code></pre>
                 
                 <p>Run FLASH (example 4 ranks):</p>
                 
-                <pre><code>srun -n 4 --overlap ./flash4</code></pre>
+                <pre><code>srun --mpi=pmi2 --overlap -n 4 ./flash4</code></pre>
                 
                 <h2>If nothing happens when you run srun</h2>
                 
